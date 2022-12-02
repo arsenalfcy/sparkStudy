@@ -1,0 +1,30 @@
+package com.fu.bigdata.spark.core.rdd.persist
+
+import org.apache.spark.rdd.RDD
+import org.apache.spark.{SparkConf, SparkContext}
+
+object Spark02_RDD_Persist {
+  def main(args: Array[String]): Unit = {
+    val sparkConf = new SparkConf().setMaster("local").setAppName("WordCount")
+    val sc = new SparkContext(sparkConf)
+
+    val list = List("Hello scala", "Hello spark", "Hello Hadoop")
+    val rdd = sc.makeRDD(list)
+    val flatRDD = rdd.flatMap(_.split(" "))
+    //未设置缓存，执行两次action算子都需要从头计算
+    val mapRDD = flatRDD.map(word=>{
+      println("map调用")
+      (word,1)
+    })
+    val result: RDD[(String, Int)] = mapRDD.reduceByKey(_ + _)
+
+    result.collect().foreach(println)
+
+    println("-------------------")
+
+    val groupRDD = mapRDD.groupByKey()
+
+    groupRDD.collect().foreach(println)
+    sc.stop()
+  }
+}
